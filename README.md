@@ -1,5 +1,5 @@
 # teams-docker
-Run multiple Microsoft Teams instances under Linux
+Run multiple Microsoft Teams instances under (Ubuntu) Linux
 
 Usage:
 
@@ -9,7 +9,7 @@ Where NAME is a uniqe identifier of the Teams instance.
 
 General steps taken by the `teams-docker` script:
 
-1. Check for dependencies (git, sed, curl, desktop-file-install)
+1. Check for dependencies (docker, git, sed, curl, desktop-file-install)
 1. Check for work dir under `$HOME/.config/teams-docker-NAME` and do a setup if necessary:
     * Build the Docker container image
     * Create a .desktop file in `$HOME/.local/share/applications`
