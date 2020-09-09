@@ -1,0 +1,91 @@
+#!/bin/bash
+set -e
+
+IMG_NAME=teams
+INSTANCE="$1"
+INST_NAME="teams-docker-${INSTANCE}"
+INST_HOME="$HOME/.config/${INST_NAME}"
+X11DOCKER="$HOME/.local/bin/x11docker"
+TEAMS_DOCKER="$HOME/.local/bin/teams-docker"
+###
+
+function die() {
+  echo -e "\e[91m! $@\e[0m"
+  exit 1
+}
+
+function log() {
+  echo -e "\e[32m+ $@\e[0m"
+}
+
+function setup() {
+    log "+ setting up ${INSTANCE} at ${INST_HOME}"
+    docker build -t "${IMG_NAME}" .
+    mkdir -p "${INST_HOME}"
+    cat teams.desktop.template | sed "s/INSTANCE/${INSTANCE}/g" > "/tmp/teams-${INSTANCE}.desktop"
+    desktop-file-install --dir="$HOME/.local/share/applications" "/tmp/teams-${INSTANCE}.desktop"
+    cp -fv "/tmp/teams-${INSTANCE}.desktop" "$HOME/.config/autostart"
+    curl "https://raw.githubusercontent.com/mviereck/x11docker/master/x11docker" --output "$X11DOCKER"
+    chmod +x "$X11DOCKER"
+    echo -e "$MYSELF" > "${TEAMS_DOCKER}"
+    chmod +x "${TEAMS_DOCKER}"
+    log "+ done setting up ${INSTANCE} at ${INST_HOME}"
+}
+
+function start() {
+    log "starting ${INST_NAME} at ${INST_HOME}"
+    set +e
+    "$X11DOCKER" \
+        --clipboard \
+        --pulseaudio \
+        --webcam \
+        --gpu \
+        --hostdisplay \
+        --hostipc \
+        --hostdbus \
+        --name="${INST_NAME}" \
+        --home="${INST_HOME}" \
+        -- \
+        --volume "$HOME:$HOME/home:rw" \
+        -- \
+        "${IMG_NAME}" "$@"
+    log "x11docker exit status: $?"
+    set -e
+}
+
+function amend() {
+    set +e
+    log "amending ${INST_NAME} with: $@"
+    docker exec "${ID}" teams "$@"
+    log "exit status: $?"
+    set -e
+}
+
+### START MAIN
+
+for cmd in docker sed curl desktop-file-install; do
+  command -v "$cmd" >/dev/null || die "required dependency '$cmd' not found in $$PATH - please install it and try again"
+done
+
+if [ $# -lt 1 ]; then
+    die "you must specify an instance name: $0 INSTANCE"
+fi
+
+MYSELF=$(cat $0)
+
+cd $(dirname $0)
+shift 1
+
+if [ ! -d "$INST_HOME" ]; then
+    setup "$@"
+fi
+
+ID=$(docker ps --filter name="${INST_NAME}" --format "{{.ID}}")
+
+if [ "$ID" != "" ]; then
+    amend "$@"
+else
+    start "$@"
+fi
+
+exit 0
