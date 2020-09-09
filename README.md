@@ -5,7 +5,7 @@ Usage:
 
 `./teams-docker NAME [ARGS]`
 
-Where NAME is an uniqe identifier of the Teams instance.
+Where NAME is a uniqe identifier of the Teams instance.
 
 General steps taken by the `teams-docker` script:
 
