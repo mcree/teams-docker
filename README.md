@@ -20,4 +20,4 @@ General steps taken by the `teams-docker` script:
     * If it is not running: start it in a new Docker container
     * If it is running already: execute `teams [ARGS]` command in the running container - this allows for opening URLS and such
     
-Arguments passed to `x11docker` can be checked in the script itself. YMMV, it works for me ™
+Arguments passed to `x11docker` can be checked in the script itself. YMMV, it works for me, tested under Ubuntu 20.04.
